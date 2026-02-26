@@ -1,9 +1,7 @@
 from sqlalchemy import Column, Integer, String, Numeric, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-
 from database import Base
-
 
 class Distributor(Base):
     __tablename__ = "distributors"
@@ -16,7 +14,6 @@ class Distributor(Base):
     current_outstanding = Column(Numeric(15, 2), nullable=False, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    # Relationships
     invoices = relationship("Invoice", back_populates="distributor")
     credit_requests = relationship("CreditRequest", back_populates="distributor")
     contextual_events = relationship("ContextualEvent", back_populates="distributor")

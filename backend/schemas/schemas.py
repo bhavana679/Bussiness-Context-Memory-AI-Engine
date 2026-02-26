@@ -1,10 +1,8 @@
 from datetime import datetime, date
-from typing import Optional, List
+from typing import Optional, List, Dict
 from pydantic import BaseModel
 from decimal import Decimal
 
-
-# ──────────────────────── Distributor ────────────────────────
 class DistributorBase(BaseModel):
     name: str
     industry: str
@@ -12,10 +10,8 @@ class DistributorBase(BaseModel):
     credit_limit: Decimal
     current_outstanding: Decimal = Decimal("0")
 
-
 class DistributorCreate(DistributorBase):
     pass
-
 
 class DistributorSummary(BaseModel):
     id: int
@@ -24,26 +20,12 @@ class DistributorSummary(BaseModel):
     city: str
     credit_limit: Decimal
     current_outstanding: Decimal
-    utilization_pct: float       # computed field
-    risk_score: Optional[float]  # latest structured risk
+    utilization_pct: float
+    risk_score: Optional[float]
 
     class Config:
         from_attributes = True
 
-
-class DistributorProfile(DistributorSummary):
-    created_at: datetime
-    avg_delay_90d: Optional[float]
-    delay_frequency: Optional[float]
-    dispute_count: Optional[int]
-    sales_trend_score: Optional[float]
-    recent_invoices: Optional[List["InvoiceSummary"]] = []
-
-    class Config:
-        from_attributes = True
-
-
-# ──────────────────────── Invoice ────────────────────────
 class InvoiceSummary(BaseModel):
     id: int
     invoice_number: str
@@ -57,50 +39,64 @@ class InvoiceSummary(BaseModel):
     class Config:
         from_attributes = True
 
+class DistributorProfile(BaseModel):
+    id: int
+    name: str
+    industry: str
+    city: str
+    credit_limit: Decimal
+    current_outstanding: Decimal
+    utilization_pct: float
+    risk_score: float
+    avg_delay_90d: float
+    delay_frequency: float
+    dispute_count: int
+    sales_trend_score: float
+    recent_invoices: List[InvoiceSummary]
 
-# ──────────────────────── Credit Request ────────────────────────
+    class Config:
+        from_attributes = True
+
 class CreditRequestInput(BaseModel):
     distributor_id: int
     requested_amount: Decimal
 
-
 class StructuredRiskBreakdown(BaseModel):
-    """Returned by structured_risk service — consumed by Person 2 as input."""
-    avg_delay_score: float          # normalised 0–1
-    utilization_score: float        # normalised 0–1
-    dispute_score: float            # normalised 0–1
-    sales_decline_score: float      # normalised 0–1
-    structured_risk: float          # final weighted score 0–100
-    utilization_pct: float          # raw %
-    avg_delay_days: float           # raw days
-    delay_frequency: float          # 0–1
+    avg_delay_score: float         
+    utilization_score: float       
+    dispute_score: float           
+    sales_decline_score: float     
+    structured_risk: float         
+    utilization_pct: float         
+    avg_delay_days: float          
+    delay_frequency: float         
     dispute_count: int
-
 
 class CreditDecisionResponse(BaseModel):
     distributor_id: int
-    requested_amount: Decimal
+    requested_amount: float
     structured_risk: float
-    decision: str                   # approve | partial | reject
-    recommended_credit: Decimal
-    confidence: float
+    final_risk: float
+    decision: str
+    confidence_score: float
     influential_factors: List[str]
-    risk_breakdown: StructuredRiskBreakdown
+    explanation: Optional[str] = "Standard analysis."
+    top_influential_cases: Optional[List[Dict]] = []
+    similar_cases: Optional[List[Dict]] = []
 
+    class Config:
+        from_attributes = True
 
-# ──────────────────────── Dashboard ────────────────────────
 class DashboardSummary(BaseModel):
     total_distributors: int
-    total_exposure: Decimal         # sum of current_outstanding
+    total_exposure: Decimal         
     total_credit_limit: Decimal
     avg_utilization_pct: float
     avg_risk_score: Optional[float]
     overdue_count: int
     overdue_pct: float
-    high_risk_count: int            # risk > 70
+    high_risk_count: int            
 
-
-# ──────────────────────── Alerts ────────────────────────
 class RiskAlert(BaseModel):
     distributor_id: int
     name: str
@@ -108,11 +104,6 @@ class RiskAlert(BaseModel):
     risk_score: float
     reason: str
 
-
 class AlertsResponse(BaseModel):
     alerts: List[RiskAlert]
     total: int
-
-
-# Allow forward references (DistributorProfile → InvoiceSummary)
-DistributorProfile.model_rebuild()

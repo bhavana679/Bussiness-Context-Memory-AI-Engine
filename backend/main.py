@@ -1,33 +1,40 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import logging
+import threading
+import uvicorn
 
 from config import settings
 from database import Base, engine
-
-# Import all models so SQLAlchemy registers them before creating tables
 import models.distributor  # noqa
 import models.invoice  # noqa
 import models.credit_request  # noqa
 import models.contextual_event  # noqa
 
 from routes import distributors, dashboard, credit, alerts
+from services.vector_store import initialize_vector_engine
 
-# ─── Create all tables on startup ───────────────────────────────────────────
-Base.metadata.create_all(bind=engine)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
-# ─── App initialization ──────────────────────────────────────────────────────
+def start_ai_engine():
+    logger.info("AI-Engine: Initializing background services...")
+    initialize_vector_engine()
+    logger.info("AI-Engine: Ready.")
+
 app = FastAPI(
     title=settings.APP_NAME,
-    description=(
-        "Business Context Memory AI Engine — Person 1 Backend.\n\n"
-        "Handles structured data, immediate + historical memory, and risk engine."
-    ),
-    version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    description="Business Context Memory AI Engine Backend",
+    version="1.0.0"
 )
 
-# ─── CORS (allow React frontend on any localhost port) ───────────────────────
+@app.on_event("startup")
+def on_startup():
+    threading.Thread(target=start_ai_engine, daemon=True).start()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -36,27 +43,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─── Routers ────────────────────────────────────────────────────────────────
 app.include_router(dashboard.router, tags=["Dashboard"])
 app.include_router(distributors.router, tags=["Distributors"])
 app.include_router(credit.router, tags=["Credit"])
 app.include_router(alerts.router, tags=["Alerts"])
 
-
 @app.get("/", tags=["Health"])
 def root():
-    return {
-        "status": "running",
-        "app": settings.APP_NAME,
-        "docs": "/docs",
-    }
-
+    return {"status": "running", "app": settings.APP_NAME}
 
 @app.get("/health", tags=["Health"])
 def health():
     return {"status": "ok"}
 
-
 if __name__ == "__main__":
-    import uvicorn
     uvicorn.run("main:app", host=settings.HOST, port=settings.PORT, reload=settings.DEBUG)
