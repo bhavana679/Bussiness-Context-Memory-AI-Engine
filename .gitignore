@@ -1,0 +1,19 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables
+.env
+
+# Database
+*.db
+*.sqlite3
+
+# OS files
+.DS_Store
+
+# Virtual environment
+venv/
+env/
+.venv/
