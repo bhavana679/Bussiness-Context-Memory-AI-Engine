@@ -9,9 +9,9 @@ from schemas.schemas import DashboardSummary
 from services.structured_risk import StructuredRiskEngine
 from services.dashboard_service import get_dashboard_summary
 
-router = APIRouter(prefix="/dashboard")
+router = APIRouter(prefix="")
 
-@router.get("/summary")
+@router.get("/dashboard-summary")
 def dashboard_status(db: Session = Depends(get_db)):
     """Returns core dashboard analytics."""
     return get_dashboard_summary(db)
