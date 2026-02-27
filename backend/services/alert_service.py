@@ -22,25 +22,26 @@ def generate_risk_alerts(db: Session) -> List[Dict]:
 
     for dist in distributors:
         try:
-            # 1. High Risk Score Alert
             risk_data = calculate_structured_risk(db, dist.id)
             if risk_data["structured_risk"] > 70:
                 all_alerts.append({
-                    "distributor_id": dist.id,
-                    "alert_type": "HIGH_RISK_SCORE",
-                    "message": f"Critical risk level: {risk_data['structured_risk']}/100"
+                    "id": f"risk-{dist.id}",
+                    "message": f"Critical risk level: {risk_data['structured_risk']}/100",
+                    "severity": "high",
+                    "type": "NeuralRisk",
+                    "distributor_name": dist.name
                 })
 
-            # 2. Critical Utilization Alert
             immediate_data = MemoryService.get_immediate_memory(db, dist.id)
             if immediate_data and immediate_data.get("utilization_pct", 0) > 90:
                 all_alerts.append({
-                    "distributor_id": dist.id,
-                    "alert_type": "CRITICAL_UTILIZATION",
-                    "message": f"Credit almost exhausted: {immediate_data['utilization_pct']:.1f}% used"
+                    "id": f"util-{dist.id}",
+                    "message": f"Critical credit exhaustion: {immediate_data['utilization_pct']:.1f}% used",
+                    "severity": "medium",
+                    "type": "Contextual",
+                    "distributor_name": dist.name
                 })
 
-            # 3. Delay Trend Alert
             recent_invoices = db.query(Invoice).filter(
                 Invoice.distributor_id == dist.id,
                 Invoice.due_date >= thirty_days_ago
@@ -61,9 +62,11 @@ def generate_risk_alerts(db: Session) -> List[Dict]:
 
                 if (recent_freq - past_freq) > 0.15:
                     all_alerts.append({
-                        "distributor_id": dist.id,
-                        "alert_type": "RISING_DELAY_TREND",
-                        "message": "Significant increase in late payment frequency"
+                        "id": f"trend-{dist.id}",
+                        "message": "Significant increase in late payment frequency",
+                        "severity": "medium",
+                        "type": "Behavioral",
+                        "distributor_name": dist.name
                     })
 
         except Exception as e:
