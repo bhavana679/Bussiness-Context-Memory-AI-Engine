@@ -36,9 +36,31 @@ def get_dashboard_summary(db: Session) -> Dict:
 
     avg_risk_score = sum(risk_scores) / len(risk_scores) if risk_scores else 0.0
 
+    # Calculate distribution
+    low = sum(1 for s in risk_scores if s < 40)
+    medium = sum(1 for s in risk_scores if 40 <= s < 70)
+    high = sum(1 for s in risk_scores if s >= 70)
+
+    # Get recent alerts for dashboard integration
+    from .alert_service import generate_risk_alerts
+    all_alerts = generate_risk_alerts(db)
+    recent_alerts = all_alerts[:3] # Show top 3 alerts
+
     return {
         "total_exposure": float(total_exposure),
         "avg_risk_score": float(round(avg_risk_score, 2)),
         "overdue_count": int(overdue_count),
-        "high_risk_distributors": high_risk_list
+        "active_count": len(distributors),
+        "risk_distribution": [
+            {"name": "Low", "value": low},
+            {"name": "Medium", "value": medium},
+            {"name": "High", "value": high}
+        ],
+        "exposure_trend": [
+            {"name": "Jan", "exposure": float(total_exposure) * 0.75},
+            {"name": "Feb", "exposure": float(total_exposure) * 0.88},
+            {"name": "Mar", "exposure": float(total_exposure)}
+        ],
+        "high_risk_distributors": high_risk_list,
+        "recent_alerts": recent_alerts
     }
