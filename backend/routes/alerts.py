@@ -1,24 +1,34 @@
-from fastapi import APIRouter, Depends
+from typing import List
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
+from typing import Optional
 from database import get_db
 from models.distributor import Distributor
 from schemas.schemas import AlertsResponse, RiskAlert
 from services.structured_risk import StructuredRiskEngine
 from services.alert_service import generate_risk_alerts
 
-router = APIRouter(prefix="/alerts")
+class AlertItem(BaseModel):
+    id: str
+    message: str
+    severity: str
+    type: str
+    distributor_name: str
 
-@router.get("/risk-alerts")
+router = APIRouter(prefix="")
+
+@router.get("/risk-alerts", response_model=List[AlertItem])
 def fetch_risk_alerts(db: Session = Depends(get_db)):
-    """Fetches high-risk triggers and behavioral alerts."""
+    """Fetches high-risk triggers and behavioral alerts as structured objects."""
     try:
         return generate_risk_alerts(db)
     except Exception as e:
-        return {"error": "Failed to fetch risk alerts", "message": str(e)}
+        raise HTTPException(status_code=500, detail=f"Failed to fetch risk alerts: {str(e)}")
 
 @router.get("-risk", response_model=AlertsResponse)
 def get_risk_alerts(db: Session = Depends(get_db)):
-    """Legacy endpoint for identifying major risk violators."""
+    """Legacy endpoint for identifying major risk alerts."""
     distributors = db.query(Distributor).all()
     alerts = []
     
