@@ -1,0 +1,64 @@
+{
+    "common": {
+        "dashboard": "डैशबोर्ड",
+        "distributors": "वितरक",
+        "creditEvaluation": "क्रेडिट मूल्यांकन",
+        "alerts": "अलर्ट",
+        "logout": "लॉगआउट",
+        "loading": "लोड हो रहा है...",
+        "error": "एक त्रुटि हुई",
+        "retry": "पुनः प्रयास करें",
+        "back": "वापस",
+        "control": "कंट्रोल",
+        "sync": "सिंक"
+    },
+    "dashboard": {
+        "title": "इंटेलिजेंस पल्स",
+        "subtitle": "बहुआयामी जोखिम अभिसरण",
+        "kpi": {
+            "activeExposure": "सक्रिय जोखिम",
+            "riskEntities": "जोखिम संस्थाएं",
+            "avgScore": "औसत जोखिम स्कोर",
+            "alerts24h": "अलर्ट (24 घंटे)"
+        },
+        "riskDistribution": "जोखिम वितरण",
+        "exposureDynamics": "जोखिम गतिशीलता",
+        "highRiskNodes": "उच्च जोखिम वाले नोड्स"
+    },
+    "distributors": {
+        "title": "संस्था रजिस्ट्री",
+        "subtitle": "मेमोरी लेयर में सक्रिय वितरण नोड्स",
+        "search": "वेक्टर आईडी या नाम खोजें...",
+        "table": {
+            "name": "संस्था का नाम",
+            "region": "क्षेत्र",
+            "industry": "उद्योग",
+            "risk": "जोखिम स्तर",
+            "exposure": "जोखिम राशि",
+            "actions": "कार्य"
+        }
+    },
+    "profile": {
+        "backToPulse": "इंटेलिजेंस पल्स पर वापस जाएं",
+        "identity": "पहचान और क्रेडिट सारांश",
+        "assessment": "हाइब्रिड मूल्यांकन",
+        "riskGrade": "जोखिम ग्रेड",
+        "structured": "संरचित",
+        "semantic": "सिमेंटिक",
+        "behavioralVelocity": "व्यवहार वेग",
+        "cognitiveInsight": "संज्ञानात्मक अंतर्दृष्टि",
+        "memoryAlignment": "मेमोरी वेक्टर एलाइनमेंट"
+    },
+    "evaluation": {
+        "title": "क्रेडिट अंडरराइटिंग",
+        "subtitle": "सिमेंटिक मेमोरी एरेज़ का लाभ उठाते हुए वास्तविक समय का जोखिम मूल्यांकन",
+        "inputPhase": "सिग्नल इनपुट चरण",
+        "targetEntity": "लक्ष्य इकाई प्रोटोकॉल",
+        "exposureRequest": "अनुरोधित राशि (INR)",
+        "execute": "जोखिम तर्क निष्पादित करें",
+        "verdict": "अंडरराइटिंग निर्णय",
+        "riskScore": "जोखिम स्कोर",
+        "confidence": "इंजन का विश्वास",
+        "attribution": "एट्रिब्यूशन मैट्रिक्स"
+    }
+}

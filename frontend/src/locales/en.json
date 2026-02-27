@@ -1,0 +1,64 @@
+{
+    "common": {
+        "dashboard": "Dashboard",
+        "distributors": "Distributors",
+        "creditEvaluation": "Evaluate Risk",
+        "alerts": "Alerts",
+        "logout": "Logout",
+        "loading": "Loading...",
+        "error": "An error occurred",
+        "retry": "Retry",
+        "back": "Back",
+        "control": "Risk",
+        "sync": "Engine"
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "subtitle": "Overview of risk and portfolio metrics",
+        "kpi": {
+            "activeExposure": "Current Exposure",
+            "riskEntities": "Active Distributors",
+            "avgScore": "Average Risk Score",
+            "alerts24h": "Recent Alerts"
+        },
+        "riskDistribution": "Risk Distribution",
+        "exposureDynamics": "Exposure Trends",
+        "highRiskNodes": "High Risk Distributors"
+    },
+    "distributors": {
+        "title": "Distributors",
+        "subtitle": "List of active distributors",
+        "search": "Search by name or ID...",
+        "table": {
+            "name": "Name",
+            "region": "Region",
+            "industry": "Industry",
+            "risk": "Risk Level",
+            "exposure": "Exposure",
+            "actions": "Actions"
+        }
+    },
+    "profile": {
+        "backToPulse": "Back",
+        "identity": "Details & Credit Summary",
+        "assessment": "Risk Assessment",
+        "riskGrade": "Risk Grade",
+        "structured": "Financial",
+        "semantic": "Behavioral",
+        "behavioralVelocity": "Risk Trend",
+        "cognitiveInsight": "Analysis",
+        "memoryAlignment": "Similar Historical Cases"
+    },
+    "evaluation": {
+        "title": "Credit Evaluation",
+        "subtitle": "Evaluate a distributor's credit risk",
+        "inputPhase": "Distributor Details",
+        "targetEntity": "Select Distributor",
+        "exposureRequest": "Requested Amount (INR)",
+        "execute": "Evaluate Risk",
+        "verdict": "Decision",
+        "riskScore": "Risk Score",
+        "confidence": "Confidence Level",
+        "attribution": "Risk Factors"
+    }
+}
