@@ -114,38 +114,28 @@ def calculate_semantic_risk(structured_metrics: Dict[str, Any]) -> Dict[str, Any
         decayed_cases = apply_temporal_decay(raw_cases)
         risk_score = compute_semantic_risk(decayed_cases)
         
+        formatted_cases = []
         for case in decayed_cases:
-            distance = case.get("distance", 1.0)
-            similarity = 1.0 / (1.0 + distance)
-            case["relevance_score"] = similarity * case.get("temporal_weight", 1.0)
+            dist = case.get("distance", 1.0)
+            sim = round(1.0 / (1.0 + dist), 4)
+            formatted_cases.append({
+                "event": case.get("event_text", "Pattern detected"),
+                "date": str(case.get("timestamp", "2024-01-01"))[:10],
+                "severity": float(case.get("severity_score", 0.0)),
+                "similarity": float(sim),
+                "outcome": str(case.get("event_type", "Contextual"))
+            })
             
-        top_cases = sorted(decayed_cases, key=lambda x: x["relevance_score"], reverse=True)[:3]
+        top_cases = sorted(formatted_cases, key=lambda x: x["similarity"], reverse=True)[:3]
         
-        explanation = "Business metrics "
-        if structured_metrics.get("structured_risk", 0) > 60:
-            explanation += "indicate elevated operational risk, which "
-        else:
-            explanation += "appear stable, but "
-            
-        if risk_score > 50:
-            explanation += f"is compounded by high-risk patterns identified in {len(top_cases)} historically similar cases."
-        elif risk_score > 10:
-            explanation += f"is influenced by minor historical correlations found in past events."
-        else:
-            explanation += "shows no significant historical risk correlations."
-
-        factors = []
-        if risk_score > 50:
-            factors.append(f"AI identified high-risk patterns in {len(decayed_cases)} similar past cases")
-        elif risk_score > 0:
-            factors.append("Semantic analysis confirms minor historical risk trends")
+        explanation = f"Business metrics indicate stability, but risk is compounded by {len(top_cases)} historically similar cases." if risk_score > 50 else "Business metrics appear stable."
 
         return {
             "semantic_risk": float(risk_score),
             "top_influential_cases": top_cases,
             "explanation": explanation,
-            "influential_factors": factors,
-            "all_similar_cases": decayed_cases
+            "influential_factors": [],
+            "all_similar_cases": formatted_cases
         }
         
     except Exception as e:
