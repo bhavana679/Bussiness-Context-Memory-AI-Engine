@@ -17,10 +17,8 @@ def make_credit_decision(db: Session, distributor_id: int, requested_amount: flo
     semantic_data = calculate_semantic_risk(structured_data)
     semantic_risk = semantic_data["semantic_risk"]
 
-    # Penalize recent negative behavior
     recency_adjustment = structured_data["avg_delay_score"] * 100
-
-    # Weighting: 60% Structured, 30% Semantic, 10% Recency behavior
+    
     final_risk = (
         (0.6 * structured_risk) + 
         (0.3 * semantic_risk) + 
@@ -39,15 +37,12 @@ def make_credit_decision(db: Session, distributor_id: int, requested_amount: flo
 
     combined_factors = []
     if structured_data["utilization_score"] > 0.7:
-        combined_factors.append("High utilization of current credit limit")
+        combined_factors.append({"description": "High credit utilization", "impact": "negative", "weight": 40})
     if structured_data["avg_delay_score"] > 0.5:
-        combined_factors.append("Recent payment delays observed")
+        combined_factors.append({"description": "Persistent payment delays", "impact": "negative", "weight": 50})
         
-    if semantic_data.get("influential_factors"):
-        combined_factors.extend(semantic_data["influential_factors"])
-
     if not combined_factors:
-        combined_factors.append("Consistent payment history and stable business metrics")
+        combined_factors.append({"description": "Stable performance history", "impact": "positive", "weight": 90})
 
     return {
         "distributor_id": distributor_id,
