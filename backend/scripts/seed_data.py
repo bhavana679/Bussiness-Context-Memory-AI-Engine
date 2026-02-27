@@ -1,5 +1,7 @@
 import sys
 import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import random
 from datetime import datetime, date, timedelta
 from decimal import Decimal
@@ -8,8 +10,9 @@ from database import SessionLocal, engine, Base
 from models.distributor import Distributor
 from models.invoice import Invoice
 from models.contextual_event import ContextualEvent
+from models.credit_request import CreditRequest
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 def seed_data():
     """Initializes the database with sample business data."""
