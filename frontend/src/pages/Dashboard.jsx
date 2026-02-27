@@ -11,155 +11,293 @@ import {
     Tooltip,
     ResponsiveContainer
 } from 'recharts';
-import { IndianRupee, AlertTriangle, Activity, TrendingUp } from 'lucide-react';
-import { mockDashboardData } from '../mockData';
+import { IndianRupee, AlertTriangle, Activity, TrendingUp, RefreshCcw, Database } from 'lucide-react';
+import { useDashboard } from '../hooks/useApiHooks';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import useAppStore from '../store/useAppStore';
+import KpiCard from '../components/KpiCard';
 
-const COLORS = ['#22c55e', '#eab308', '#ef4444']; // Green, Yellow, Red
-const riskDistribution = [
-    { name: 'Low Risk', value: 45 },
-    { name: 'Medium Risk', value: 30 },
-    { name: 'High Risk', value: 25 },
-];
+const COLORS = ['#22c55e', '#eab308', '#ef4444'];
 
-const mockExposureData = [
-    { name: 'Jan', exposure: 12000000 },
-    { name: 'Feb', exposure: 15000000 },
-    { name: 'Mar', exposure: 18000000 },
-    { name: 'Apr', exposure: 22000000 },
-    { name: 'May', exposure: 25000000 },
-];
+const SkeletonCard = () => (
+    <div className="bg-white  rounded-xl shadow-sm p-6 border border-gray-100  flex items-center animate-pulse transition-colors duration-300">
+        <div className="p-3 rounded-lg bg-gray-100  w-12 h-12 mr-4"></div>
+        <div className="space-y-2 flex-1">
+            <div className="h-4 bg-gray-100  rounded w-1/2"></div>
+            <div className="h-6 bg-gray-100  rounded w-3/4"></div>
+        </div>
+    </div>
+);
 
 export default function Dashboard() {
-    const { total_exposure, avg_risk_score, overdue_count, high_risk_distributors } = mockDashboardData;
+    const { data, loading, error, refetch } = useDashboard();
+    const { t } = useTranslation();
+    const navigate = useNavigate();
+    const { auth } = useAppStore();
 
     const formatCurrency = (value) => {
-        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumSignificantDigits: 3 }).format(value);
+        if (!value) return '₹0';
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 0
+        }).format(value);
     };
+
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center p-12 bg-white  rounded-2xl border-2 border-dashed border-red-100  text-center transition-colors duration-300">
+                <div className="p-4 bg-red-50  rounded-full mb-4">
+                    <AlertTriangle className="text-red-500" size={48} />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900  mb-2">Failed to load data</h3>
+                <p className="text-gray-500  mb-6 max-w-sm font-medium">We couldn't connect to the server. Please check your network connection.</p>
+                <button
+                    onClick={() => refetch()}
+                    className="flex items-center px-6 py-3 bg-indigo-600 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 "
+                >
+                    <RefreshCcw size={18} className="mr-2" /> Retry Connection
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Executive Overview</h2>
-                <span className="text-sm font-medium text-gray-500 bg-white px-3 py-1 rounded-full shadow-sm">Last updated: Just now</span>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                    <h2 className="text-3xl font-black text-gray-900 tracking-tight uppercase italic">
+                        {auth.role === 'Viewer' ? 'Portfolio Intelligence' : t('dashboard.title')}
+                    </h2>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">
+                        {auth.role === 'Viewer'
+                            ? 'Overview of risk and portfolio metrics'
+                            : t('dashboard.subtitle')}
+                    </p>
+                </div>
+                <button
+                    onClick={() => refetch()}
+                    disabled={loading}
+                    className="flex items-center px-6 py-3 bg-white  border border-gray-200  rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-700  hover:bg-gray-50  transition-all disabled:opacity-50 shadow-sm"
+                >
+                    <RefreshCcw size={14} className={`mr-2 ${loading ? 'animate-spin' : ''}`} />
+                    {loading ? t('common.loading') : t('common.retry')}
+                </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {/* Total Exposure Card */}
-                <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center">
-                    <div className="p-3 rounded-lg bg-indigo-50 text-indigo-600 mr-4">
-                        <IndianRupee size={24} />
-                    </div>
-                    <div>
-                        <p className="text-sm font-medium text-gray-500">Total Exposure</p>
-                        <p className="text-2xl font-bold text-gray-900">{formatCurrency(total_exposure)}</p>
-                    </div>
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {loading && !data ? (
+                    <>
+                        <SkeletonCard />
+                        <SkeletonCard />
+                        <SkeletonCard />
+                        <SkeletonCard />
+                    </>
+                ) : (
+                    <>
+                        <KpiCard
+                            icon={IndianRupee}
+                            label={t('dashboard.kpi.activeExposure')}
+                            value={formatCurrency(data?.total_exposure)}
+                            colorClass="indigo"
+                        />
 
-                {/* Avg Risk Score Card */}
-                <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center">
-                    <div className="p-3 rounded-lg bg-yellow-50 text-yellow-600 mr-4">
-                        <Activity size={24} />
-                    </div>
-                    <div>
-                        <p className="text-sm font-medium text-gray-500">Average Risk Score</p>
-                        <p className="text-2xl font-bold text-gray-900">{avg_risk_score}</p>
-                    </div>
-                </div>
+                        <KpiCard
+                            icon={Activity}
+                            label={t('dashboard.kpi.avgScore')}
+                            value={data?.avg_risk_score || 0}
+                            colorClass="yellow"
+                        />
 
-                {/* Overdue Count Card */}
-                <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center">
-                    <div className="p-3 rounded-lg bg-red-50 text-red-600 mr-4">
-                        <AlertTriangle size={24} />
-                    </div>
-                    <div>
-                        <p className="text-sm font-medium text-gray-500">Overdue Invoices</p>
-                        <p className="text-2xl font-bold text-gray-900">{overdue_count}</p>
-                    </div>
-                </div>
+                        <KpiCard
+                            icon={AlertTriangle}
+                            label="Overdue Count"
+                            value={data?.overdue_count || 0}
+                            colorClass="red"
+                        />
 
-                {/* Active Entities Card */}
-                <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center">
-                    <div className="p-3 rounded-lg bg-green-50 text-green-600 mr-4">
-                        <TrendingUp size={24} />
-                    </div>
-                    <div>
-                        <p className="text-sm font-medium text-gray-500">Active Distributors</p>
-                        <p className="text-2xl font-bold text-gray-900">124</p>
-                    </div>
-                </div>
+                        <KpiCard
+                            icon={TrendingUp}
+                            label={t('dashboard.kpi.riskEntities')}
+                            value={data?.active_count || 0}
+                            colorClass="green"
+                        />
+                    </>
+                )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Risk Distribution Chart */}
-                <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 col-span-1 border-t-4 border-t-indigo-500">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Risk Distribution</h3>
-                    <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={riskDistribution}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    paddingAngle={5}
-                                    dataKey="value"
-                                >
-                                    {riskDistribution.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
-                    <div className="flex justify-center space-x-4 text-sm mt-4">
-                        <div className="flex items-center"><span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span> Low</div>
-                        <div className="flex items-center"><span className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></span> Med</div>
-                        <div className="flex items-center"><span className="w-3 h-3 bg-red-500 rounded-full mr-2"></span> High</div>
+                <div className="bg-white  rounded-3xl shadow-sm p-8 border border-gray-100  flex flex-col border-t-4 border-t-indigo-600 transition-colors duration-300">
+                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-8">{t('dashboard.riskDistribution')}</h3>
+                    <div className="h-64 flex items-center justify-center relative">
+                        {loading && !data ? (
+                            <div className="w-24 h-24 rounded-full border-4 border-gray-100  border-t-indigo-600 animate-spin"></div>
+                        ) : data?.risk_distribution?.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={data.risk_distribution}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={65}
+                                        outerRadius={85}
+                                        paddingAngle={4}
+                                        dataKey="value"
+                                        stroke="none"
+                                    >
+                                        {data.risk_distribution.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        contentStyle={{
+                                            borderRadius: '16px',
+                                            border: 'none',
+                                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                            backdropFilter: 'blur(8px)',
+                                            boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
+                                            fontWeight: '900',
+                                            fontSize: '12px'
+                                        }}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">No data</p>
+                        )}
                     </div>
                 </div>
 
-                {/* Exposure Trend */}
-                <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 col-span-1 lg:col-span-2">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Exposure Trend (M INR)</h3>
-                    <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={mockExposureData}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                                <YAxis axisLine={false} tickLine={false} tickFormatter={(value) => value / 1000000} />
-                                <Tooltip formatter={(value) => formatCurrency(value)} />
-                                <Bar dataKey="exposure" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
+                <div className="bg-white  rounded-3xl shadow-sm p-8 border border-gray-100  lg:col-span-2 transition-colors duration-300">
+                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-8">{t('dashboard.exposureDynamics')}</h3>
+                    <div className="h-64 flex items-center justify-center">
+                        {loading && !data ? (
+                            <div className="w-full h-full bg-gray-50  rounded-2xl animate-pulse"></div>
+                        ) : data?.exposure_trend?.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={data.exposure_trend}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-gray-100 " />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#9ca3af' }} dy={10} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#9ca3af' }} tickFormatter={(val) => `@\u20B9${val / 100000}L`} />
+                                    <Tooltip
+                                        cursor={{ fill: 'rgba(99, 102, 241, 0.05)' }}
+                                        contentStyle={{
+                                            borderRadius: '16px',
+                                            border: 'none',
+                                            boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
+                                            fontWeight: '900',
+                                            fontSize: '12px',
+                                            padding: '12px'
+                                        }}
+                                        formatter={(value) => [formatCurrency(value), 'Exposure']}
+                                    />
+                                    <Bar dataKey="exposure" fill="#4f46e5" radius={[6, 6, 0, 0]} barSize={35} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">No Trend Data</p>
+                        )}
                     </div>
                 </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-                <div className="px-6 py-4 border-b border-gray-100 bg-red-50 flex justify-between items-center">
-                    <h3 className="text-lg font-semibold text-red-800 flex items-center">
-                        <AlertTriangle className="mr-2" size={20} /> Watchlist - High Risk
+            <div className="bg-white  rounded-3xl shadow-lg border border-gray-100  overflow-hidden transition-colors duration-300">
+                <div className="px-8 py-6 border-b border-gray-100  bg-gray-50/50  flex justify-between items-center transition-colors">
+                    <h3 className="text-sm font-black text-gray-900  flex items-center uppercase tracking-widest">
+                        <Database className="mr-3 text-indigo-600 " size={18} /> {t('dashboard.highRiskNodes')}
                     </h3>
+                    {auth.role === 'Viewer' && (
+                        <span className="text-[8px] font-black px-3 py-1 bg-gray-200 text-gray-500 rounded-full uppercase tracking-tighter">Read-Only</span>
+                    )}
                 </div>
-                <div className="divide-y divide-gray-100">
-                    {high_risk_distributors.map((dist) => (
-                        <div key={dist.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                            <div>
-                                <p className="font-semibold text-gray-900">{dist.name}</p>
-                                <p className="text-sm text-gray-500">ID: {dist.id}</p>
+                <div className="divide-y divide-gray-100 ">
+                    {loading && !data ? (
+                        [1, 2, 3].map((i) => (
+                            <div key={i} className="px-8 py-6 animate-pulse flex justify-between items-center">
+                                <div className="space-y-3 flex-1">
+                                    <div className="h-5 bg-gray-100  rounded-lg w-1/3"></div>
+                                    <div className="h-4 bg-gray-100  rounded-md w-1/4"></div>
+                                </div>
+                                <div className="h-10 bg-gray-100  rounded-2xl w-24"></div>
                             </div>
-                            <div className="flex items-center">
-                                <span className="text-sm text-gray-600 mr-2">Risk Score:</span>
-                                <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full font-bold">
-                                    {dist.risk_score}
-                                </span>
+                        ))
+                    ) : data?.high_risk_distributors?.length > 0 ? (
+                        data.high_risk_distributors.map((dist) => (
+                            <div
+                                key={dist.id}
+                                onClick={() => navigate(`/distributors/${dist.id}`)}
+                                className="px-8 py-5 flex items-center justify-between hover:bg-indigo-50/50 transition-all cursor-pointer group"
+                            >
+                                <div className="space-y-1">
+                                    <p className="font-black text-gray-900 group-hover:text-indigo-600 transition-colors uppercase tracking-tight text-base">{dist.name}</p>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ID: {String(dist.id).slice(0, 8)}...</p>
+                                </div>
+                                <div className="flex items-center">
+                                    <span className="text-[9px] font-black text-gray-400 mr-4 uppercase tracking-[0.2em]">Score</span>
+                                    <span className={`px-5 py-2 rounded-2xl font-black text-sm border-2 transform group-hover:scale-105 transition-transform ${dist.risk_score > 80
+                                        ? 'bg-red-50 text-red-700 border-red-100 shadow-red-100 font-black'
+                                        : 'bg-yellow-50 text-yellow-700 border-yellow-100'
+                                        }`}>
+                                        {dist.risk_score}
+                                    </span>
+                                </div>
                             </div>
+                        ))
+                    ) : (
+                        <div className="px-8 py-16 text-center">
+                            <p className="text-gray-400 text-[10px] uppercase font-black tracking-widest">No high-risk distributors found</p>
                         </div>
-                    ))}
+                    )}
+                </div>
+            </div>
+
+            <div className="bg-white  rounded-3xl shadow-xl border border-gray-100  transition-colors duration-300">
+                <div className="px-8 py-5 border-b border-gray-100  flex justify-between items-center bg-gray-50/30 ">
+                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] flex items-center">
+                        <AlertTriangle className="mr-3 text-red-500" size={14} /> Recent Risk Alerts
+                    </h3>
+                    {auth.role === 'Admin' && (
+                        <button onClick={() => navigate('/alerts')} className="text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:opacity-70">View All</button>
+                    )}
+                </div>
+                <div className="p-8">
+                    {loading && !data ? (
+                        <div className="space-y-4">
+                            <div className="h-14 bg-gray-50  rounded-2xl animate-pulse"></div>
+                            <div className="h-14 bg-gray-50  rounded-2xl animate-pulse"></div>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {data?.recent_alerts?.length > 0 ? (
+                                data.recent_alerts.map(alert => (
+                                    <div key={alert.id} className={`p-5 rounded-[24px] border flex items-center justify-between transition-all hover:scale-[1.01] ${alert.severity === 'high' ? 'bg-red-50/50 border-red-100' : 'bg-yellow-50/50 border-yellow-100'}`}>
+                                        <div className="flex items-center space-x-5">
+                                            <div className={`w-2 h-2 rounded-full ${alert.severity === 'high' ? 'bg-red-500' : 'bg-yellow-500'} animate-pulse`}></div>
+                                            <div>
+                                                <span className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${alert.severity === 'high' ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-600'}`}>
+                                                    {alert.type}
+                                                </span>
+                                                <p className="mt-2 text-xs font-black text-gray-700 tracking-tight uppercase leading-snug">
+                                                    <span className="text-indigo-600">[{alert.distributor_name}]</span> {alert.message}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span className="text-[8px] font-black text-gray-400 uppercase italic">Just Now</span>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-10 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-100">
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">No recent risk alerts</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
     );
 }
+
+
