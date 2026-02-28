@@ -47,12 +47,10 @@ apiClient.interceptors.response.use(
                 normalizedError.message = 'Authentication required. Please re-login.';
                 localStorage.removeItem('auth_token');
                 localStorage.removeItem('user_role');
-                // Redirect user back to login so they don't get stuck
                 if (!window.location.pathname.includes('/login')) {
                     window.location.href = '/login';
                 }
             } else if (error.response.status === 422) {
-                // FastAPI gives validation errors as an array in detail
                 const detail = error.response.data?.detail;
                 if (Array.isArray(detail)) {
                     normalizedError.message = detail.map(e => e.msg).join(', ');

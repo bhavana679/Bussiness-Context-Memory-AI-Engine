@@ -5,10 +5,9 @@ from jose import JWTError, jwt
 
 logger = logging.getLogger(__name__)
 
-# JWT configuration - in production these should come from env vars
 SECRET_KEY = "business-context-memory-ai-engine-jwt-secret-key-2026"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 8  # 8 hours
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 8
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:

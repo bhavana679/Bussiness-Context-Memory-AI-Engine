@@ -35,13 +35,12 @@ def list_distributors(
     
     for dist in distributors:
         risk_data = StructuredRiskEngine.evaluate(db, dist.id)
-        
-        # Filter by risk category if requested
+
         score = risk_data.structured_risk
         category = "low"
         if score >= 80: category = "high"
         elif score >= 40: category = "medium"
-        
+
         if risk_filter and risk_filter.lower() != category:
             continue
 

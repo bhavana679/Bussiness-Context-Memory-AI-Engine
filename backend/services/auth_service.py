@@ -6,7 +6,6 @@ from models.user import User
 
 logger = logging.getLogger(__name__)
 
-# Industry-standard bcrypt password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
@@ -19,13 +18,11 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Securely verifies a plain text password against a bcrypt hash.
     Also handles legacy SHA-256 hashes for backward compatibility.
     """
-    # First try bcrypt verify
     try:
         return pwd_context.verify(plain_password, hashed_password)
     except Exception:
         pass
 
-    # Fallback: support legacy SHA-256 hashes existing in DB
     import hashlib
     legacy_hash = hashlib.sha256(plain_password.encode("utf-8")).hexdigest()
     if legacy_hash == hashed_password:

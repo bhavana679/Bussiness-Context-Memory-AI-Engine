@@ -57,7 +57,6 @@ def start_ai_engine():
 async def websocket_alert_runner():
     last_alerts = {}
     while True:
-        # Poll every 5 minutes — frequent enough to catch new risks, not spammy
         await asyncio.sleep(300)
         if not manager.active_connections:
             last_alerts.clear()
@@ -71,13 +70,11 @@ async def websocket_alert_runner():
                     alert_id = alert.get("id")
                     current_alert_ids.add(alert_id)
 
-                    # Only broadcast if the alert is new or if the message content changed
                     prev_alert = last_alerts.get(alert_id)
                     if not prev_alert or prev_alert.get("message") != alert.get("message"):
                         await manager.broadcast(alert)
                         last_alerts[alert_id] = alert
 
-                # Remove resolved alerts from cache so they can re-trigger cleanly
                 for old_id in set(last_alerts.keys()) - current_alert_ids:
                     del last_alerts[old_id]
 
@@ -86,11 +83,9 @@ async def websocket_alert_runner():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup logic
     threading.Thread(target=start_ai_engine, daemon=True).start()
     asyncio.create_task(websocket_alert_runner())
     yield
-    # Shutdown logic (if any)
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -125,7 +120,6 @@ async def websocket_endpoint(
     token: str = Query(default=None)
 ):
     """Authenticated WebSocket endpoint. Requires a valid JWT token as a query param."""
-    # Validate JWT token before accepting connection
     if not token:
         await websocket.close(code=4001, reason="Authentication required")
         logger.warning("WS rejected: no token provided")
