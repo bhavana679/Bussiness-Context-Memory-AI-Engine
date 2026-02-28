@@ -4,6 +4,7 @@ import { ShieldAlert, Server, ShieldCheck, User, ArrowLeft } from 'lucide-react'
 import useAppStore from '../store/useAppStore';
 import { postLogin } from '../services/api';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -11,6 +12,7 @@ export default function Login() {
     const [isLoading, setIsLoading] = useState(false);
     const { setAuth } = useAppStore();
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -26,11 +28,11 @@ export default function Login() {
             const response = await postLogin({ email, password });
 
             setAuth(response.token, response.role);
-            toast.success('Logged in successfully');
+            toast.success(t('common.success') || 'Logged in successfully');
             navigate('/');
 
         } catch (error) {
-            const errorMsg = error.response?.data?.detail || "Login failed.";
+            const errorMsg = error.message || "Login failed.";
             toast.error(errorMsg);
         } finally {
             setIsLoading(false);
@@ -44,21 +46,21 @@ export default function Login() {
 
             <div className="w-full max-w-md relative z-10">
                 <Link to="/welcome" className="inline-flex items-center text-gray-500 hover:text-indigo-600 font-bold text-xs uppercase tracking-widest mb-8 transition-colors">
-                    <ArrowLeft size={14} className="mr-2" /> Go Back
+                    <ArrowLeft size={14} className="mr-2" /> {t('common.goBack')}
                 </Link>
 
                 <div className="text-center mb-10">
                     <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-indigo-200">
                         <Server className="text-white" size={32} />
                     </div>
-                    <h1 className="text-4xl font-black text-gray-900 tracking-widest uppercase italic">Risk <span className="text-indigo-600">Management</span></h1>
-                    <p className="text-gray-500 mt-3 text-xs uppercase tracking-widest font-black">Sign in to continue</p>
+                    <h1 className="text-4xl font-black text-gray-900 tracking-widest uppercase italic">{t('common.control')} <span className="text-indigo-600">{t('common.sync')}</span></h1>
+                    <p className="text-gray-500 mt-3 text-xs uppercase tracking-widest font-black">{t('auth.signInToContinue')}</p>
                 </div>
 
                 <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-10 border border-gray-100">
                     <form onSubmit={handleLogin} className="space-y-6">
                         <div>
-                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Email Address</label>
+                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('auth.email')}</label>
                             <div className="relative">
                                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                 <input
@@ -73,7 +75,7 @@ export default function Login() {
                         </div>
 
                         <div>
-                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Password</label>
+                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('auth.password')}</label>
                             <div className="relative">
                                 <ShieldAlert className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                 <input
@@ -92,20 +94,20 @@ export default function Login() {
                             disabled={isLoading}
                             className={`w-full font-black text-xs uppercase tracking-[0.2em] rounded-xl py-5 transition-all shadow-xl ${isLoading ? 'bg-indigo-300 cursor-not-allowed text-white shadow-none' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200'}`}
                         >
-                            {isLoading ? 'Authenticating...' : 'Sign In'}
+                            {isLoading ? t('auth.signingIn') : t('auth.login')}
                         </button>
                     </form>
 
                     <div className="mt-8 pt-6 border-t border-gray-100 text-center">
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                            Don't have an account? <Link to="/signup" className="text-indigo-600 hover:text-indigo-800 ml-1">Sign up</Link>
+                            {t('auth.noAccount')} <Link to="/signup" className="text-indigo-600 hover:text-indigo-800 ml-1">{t('auth.signup')}</Link>
                         </p>
                     </div>
                 </div>
             </div>
 
             <div className="absolute bottom-6 text-center w-full">
-                <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Internal Portal</p>
+                <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">{t('auth.internalPortal')}</p>
             </div>
         </div>
     );

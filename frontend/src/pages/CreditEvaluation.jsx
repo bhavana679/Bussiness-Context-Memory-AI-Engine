@@ -12,12 +12,17 @@ import {
 } from 'lucide-react';
 import { useCreditEvaluation, useDistributors, useCreditHistory } from '../hooks/useApiHooks';
 import useAppStore from '../store/useAppStore';
+import { useTranslation } from 'react-i18next';
+import { formatCurrency, formatNumber, convertDigits } from '../utils/formatters';
 
 export default function CreditEvaluation() {
+    const { t, i18n } = useTranslation();
     const [requestedAmount, setRequestedAmount] = useState('');
     const location = useLocation();
     const [selectedDistributorId, setSelectedDistributorId] = useState(location.state?.distributorId || '');
     const { auth } = useAppStore();
+
+    // Removed local formatters to use central ones from utils/formatters.js
 
     const { data: distributors, loading: loadingDistributors, error: distributorsError, refetch: refetchDistributors } = useDistributors({ limit: 50 });
     const { data: result, loading: isEvaluating, error, evaluate } = useCreditEvaluation();
@@ -49,21 +54,21 @@ export default function CreditEvaluation() {
     return (
         <div className="max-w-7xl mx-auto space-y-10 pb-20">
             <div className="mb-10">
-                <h2 className="text-4xl font-black text-gray-900  tracking-tighter uppercase italic">Credit <span className="text-indigo-600 ">Evaluation</span></h2>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mt-2">Evaluate distributor risk</p>
+                <h2 className="text-4xl font-black text-gray-900  tracking-tighter uppercase italic">{t('evaluation.title')} <span className="text-indigo-600 ">{t('evaluation.execute')}</span></h2>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mt-2">{t('evaluation.subtitle')}</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                 <div className="lg:col-span-5 space-y-8">
                     <div className="bg-white  rounded-3xl shadow-xl border border-gray-100  p-10 transition-colors duration-300">
                         <h3 className="text-[10px] font-black text-gray-400  uppercase tracking-[0.3em] mb-10 flex items-center">
-                            <Zap size={16} className="mr-3 text-indigo-500" /> Distributor Details
+                            <Zap size={16} className="mr-3 text-indigo-500" /> {t('evaluation.inputPhase')}
                         </h3>
 
                         <form onSubmit={handleEvaluate} className="space-y-6">
                             <div className="space-y-8">
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400  uppercase tracking-[0.2em] mb-3 ml-1">Select Distributor</label>
+                                    <label className="block text-[10px] font-black text-gray-400  uppercase tracking-[0.2em] mb-3 ml-1">{t('evaluation.targetEntity')}</label>
                                     <div className="relative">
                                         <select
                                             value={selectedDistributorId}
@@ -72,9 +77,9 @@ export default function CreditEvaluation() {
                                             className="w-full border border-gray-200 rounded-2xl p-4 bg-gray-50 text-gray-900 font-black text-xs uppercase tracking-widest focus:ring-2 focus:ring-indigo-500 focus:outline-none disabled:opacity-30 transition-all cursor-pointer pr-10"
                                             required
                                         >
-                                            <option value="" disabled className="bg-white ">Select a distributor...</option>
+                                            <option value="" disabled className="bg-white ">{t('evaluation.selectPlaceholder')}</option>
                                             {distributors?.map(d => (
-                                                <option key={d.id} value={d.id} className="bg-white ">{d.name} — {d.city}</option>
+                                                <option key={d.id} value={d.id} className="bg-white ">{convertDigits(d.name, i18n)} — {convertDigits(d.city, i18n)}</option>
                                             ))}
                                         </select>
                                         <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
@@ -87,13 +92,13 @@ export default function CreditEvaluation() {
                                             onClick={() => refetchDistributors()}
                                             className="mt-2 text-[8px] font-black text-red-500 uppercase tracking-widest hover:underline"
                                         >
-                                            Failed to load distributors. Click to try again.
+                                            {t('common.error')}. {t('common.retry')}.
                                         </button>
                                     )}
                                 </div>
 
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400  uppercase tracking-[0.2em] mb-3 ml-1">Requested Amount (INR)</label>
+                                    <label className="block text-[10px] font-black text-gray-400  uppercase tracking-[0.2em] mb-3 ml-1">{t('evaluation.exposureRequest')}</label>
                                     <div className="relative group">
                                         <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300  font-black text-xl">₹</span>
                                         <input
@@ -118,11 +123,11 @@ export default function CreditEvaluation() {
                                 >
                                     {isEvaluating ? (
                                         <span className="flex items-center">
-                                            <RefreshCcw className="animate-spin mr-4" size={20} /> EVALUATING...
+                                            <RefreshCcw className="animate-spin mr-4" size={20} /> {t('evaluation.searching')}
                                         </span>
                                     ) : (
                                         <>
-                                            Evaluate Risk
+                                            {t('evaluation.execute')}
                                             <Zap size={18} className="ml-3 group-hover/btn:translate-x-1 transition-transform" />
                                         </>
                                     )}
@@ -135,8 +140,8 @@ export default function CreditEvaluation() {
                         <div className="bg-red-50 border-2 border-red-100 rounded-2xl p-6 flex items-start text-red-700">
                             <ShieldAlert className="mr-3 flex-shrink-0" size={24} />
                             <div>
-                                <h4 className="font-black text-sm uppercase tracking-tighter">Evaluation Error</h4>
-                                <p className="text-sm font-medium mt-1">The request could not be processed: {error.message}</p>
+                                <h4 className="font-black text-sm uppercase tracking-tighter">{t('common.error')}</h4>
+                                <p className="text-sm font-medium mt-1">{error.message}</p>
                             </div>
                         </div>
                     )}
@@ -148,8 +153,8 @@ export default function CreditEvaluation() {
                             <div className="p-8 bg-white  rounded-full shadow-2xl mb-8 group hover:scale-110 transition-transform">
                                 <BrainCircuit size={64} className="text-gray-100  group-hover:text-indigo-500 transition-colors" />
                             </div>
-                            <h3 className="text-sm font-black text-gray-300  uppercase tracking-[0.4em]">Ready for Evaluation</h3>
-                            <p className="text-gray-400  text-[10px] font-bold uppercase tracking-widest mt-4 max-w-xs leading-relaxed">Select a distributor and enter an amount to begin.</p>
+                            <h3 className="text-sm font-black text-gray-300  uppercase tracking-[0.4em]">{t('evaluation.ready')}</h3>
+                            <p className="text-gray-400  text-[10px] font-bold uppercase tracking-widest mt-4 max-w-xs leading-relaxed">{t('evaluation.readySubtitle')}</p>
                         </div>
                     )}
 
@@ -170,27 +175,27 @@ export default function CreditEvaluation() {
                                 <div className="mb-6 transform hover:scale-110 transition-transform duration-500">
                                     {getDecisionIcon(result.decision)}
                                 </div>
-                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400 mb-2">Decision</p>
+                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400 mb-2">{t('evaluation.decisive')}</p>
                                 <h3 className={`text-6xl font-black mb-1 transition-colors tracking-tighter ${result.decision?.toUpperCase() === 'APPROVED' ? 'text-green-600' :
                                     result.decision?.toUpperCase() === 'DECLINED' ? 'text-red-600' :
                                         'text-yellow-600'
-                                    }`}>{result.decision}</h3>
+                                    }`}>{t(`common.${result.decision?.toLowerCase()}`)}</h3>
                                 <div className="mt-2 flex items-center space-x-2">
                                     <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-pulse"></div>
                                     <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">
-                                        Approved by: <span className="text-gray-900 underline decoration-indigo-300 decoration-2">{auth.role === 'Admin' ? 'System Administrator' : 'Risk Officer'}</span>
+                                        {t('evaluation.approvedBy')} <span className="text-gray-900 underline decoration-indigo-300 decoration-2">{auth.role === 'Admin' ? t('evaluation.systemAdmin') : t('evaluation.riskOfficer')}</span>
                                     </span>
                                 </div>
 
                                 <div className="mt-10 flex flex-col md:flex-row items-center gap-6 md:gap-10 bg-white/60 px-8 py-6 md:py-5 rounded-3xl backdrop-blur-xl border border-white/50 shadow-inner w-full md:w-auto">
                                     <div className="text-center">
-                                        <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1">Risk Score</p>
-                                        <p className="text-3xl font-black text-gray-900 italic tracking-tighter">{result.final_risk}<span className="text-sm opacity-30 ml-0.5">/100</span></p>
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1">{t('evaluation.riskScore')}</p>
+                                        <p className="text-3xl font-black text-gray-900 italic tracking-tighter">{formatNumber(result.final_risk, i18n)}<span className="text-sm opacity-30 ml-0.5">/100</span></p>
                                     </div>
                                     <div className="hidden md:block w-px h-12 bg-gray-200"></div>
                                     <div className="text-center">
-                                        <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1">Confidence Level</p>
-                                        <p className="text-3xl font-black text-gray-900 italic tracking-tighter">{result.confidence_score}<span className="text-sm opacity-30 ml-0.5">%</span></p>
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1">{t('evaluation.confidence')}</p>
+                                        <p className="text-3xl font-black text-gray-900 italic tracking-tighter">{formatNumber(result.confidence_score * 100, i18n)}<span className="text-sm opacity-30 ml-0.5">%</span></p>
                                     </div>
                                 </div>
                             </div>
@@ -203,9 +208,9 @@ export default function CreditEvaluation() {
                                     {result.influential_factors?.map((factor, idx) => (
                                         <div key={idx} className="flex items-center p-5 bg-gray-50  rounded-3xl border border-transparent hover:border-gray-100  transition-all hover:scale-[1.01] group">
                                             <div className={`w-3 h-3 rounded-full mr-6 shadow-sm ${factor.impact === 'negative' ? 'bg-red-500 shadow-red-100' : 'bg-green-500 shadow-green-100'}`}></div>
-                                            <p className="flex-1 text-sm font-black text-gray-700  tracking-tight">{factor.description}</p>
+                                            <p className="flex-1 text-sm font-black text-gray-700  tracking-tight">{convertDigits(factor.description, i18n)}</p>
                                             <div className="bg-white  px-4 py-1 rounded-full border border-gray-100  shadow-sm">
-                                                <span className="text-[9px] font-black text-indigo-600  uppercase tracking-widest">{factor.weight}% Influence</span>
+                                                <span className="text-[9px] font-black text-indigo-600  uppercase tracking-widest">{formatNumber(factor.weight, i18n)}% {t('evaluation.influence')}</span>
                                             </div>
                                         </div>
                                     ))}
@@ -215,26 +220,26 @@ export default function CreditEvaluation() {
                             {result.similar_cases?.length > 0 && (
                                 <div className="bg-white  rounded-[32px] shadow-xl border border-gray-100  p-10 transition-colors duration-300">
                                     <h4 className="text-[9px] font-black text-gray-400  uppercase tracking-[0.3em] mb-10 flex items-center">
-                                        <History size={16} className="mr-3 text-purple-600 " /> Similar Historical Cases
+                                        <History size={16} className="mr-3 text-purple-600 " /> {t('profile.similarCases')}
                                     </h4>
                                     <div className="space-y-6">
                                         {result.similar_cases.map((sc, idx) => (
                                             <div key={idx} className="p-6 rounded-3xl border border-gray-50  flex gap-6 hover:border-purple-200  hover:bg-purple-50/30  transition-all group">
                                                 <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-white  border border-gray-100  flex flex-col items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-                                                    <span className="text-lg font-black text-gray-900  leading-none">{(sc.similarity * 100).toFixed(0)}</span>
+                                                    <span className="text-lg font-black text-gray-900  leading-none">{formatNumber(sc.similarity * 100, i18n)}</span>
                                                     <span className="text-[8px] font-black text-gray-400  uppercase mt-1">%</span>
                                                 </div>
                                                 <div className="pt-1 flex-1">
                                                     <div className="flex justify-between items-start mb-2">
-                                                        <p className="text-sm font-black text-gray-800  leading-tight tracking-tight">"{sc.event}"</p>
-                                                        <span className="text-[8px] font-black text-gray-400 uppercase bg-gray-50  px-2 py-1 rounded tracking-widest">{sc.date}</span>
+                                                        <p className="text-sm font-black text-gray-800  leading-tight tracking-tight">"{convertDigits(sc.event, i18n)}"</p>
+                                                        <span className="text-[8px] font-black text-gray-400 uppercase bg-gray-50  px-2 py-1 rounded tracking-widest">{convertDigits(sc.date, i18n)}</span>
                                                     </div>
                                                     <div className="flex items-center space-x-3">
                                                         <div className="inline-flex items-center px-4 py-1.5 bg-gray-50  rounded-xl border border-gray-100 ">
-                                                            <span className="text-[9px] font-black text-indigo-600  uppercase tracking-[0.2em] italic">Outcome: {sc.outcome}</span>
+                                                            <span className="text-[9px] font-black text-indigo-600  uppercase tracking-[0.2em] italic">{t('evaluation.outcome')} {convertDigits(sc.outcome, i18n)}</span>
                                                         </div>
                                                         <div className={`px-3 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest ${sc.severity > 0.7 ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
-                                                            Severity: {sc.severity}
+                                                            {t('evaluation.severity')} {formatNumber(sc.severity, i18n, 2)}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -249,13 +254,13 @@ export default function CreditEvaluation() {
                                     onClick={() => alert('Decision confirmed and saved.')}
                                     className="flex-1 py-5 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-indigo-700 transition-all flex items-center justify-center"
                                 >
-                                    <CheckCircle size={18} className="mr-3" /> Confirm Decision
+                                    <CheckCircle size={18} className="mr-3" /> {t('evaluation.confirmDecision')}
                                 </button>
                                 <button
                                     onClick={() => alert('This requires manual override. Please provide justification.')}
                                     className="flex-1 py-5 bg-white border-2 border-gray-100 text-gray-400 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-gray-50 transition-all flex items-center justify-center"
                                 >
-                                    <XCircle size={18} className="mr-3" /> Override Decision
+                                    <XCircle size={18} className="mr-3" /> {t('evaluation.overrideDecision')}
                                 </button>
                             </div>
                         </div>
@@ -267,9 +272,9 @@ export default function CreditEvaluation() {
                 <div className="flex justify-between items-end mb-10">
                     <div>
                         <h3 className="text-2xl font-black text-gray-900 tracking-tighter uppercase italic flex items-center">
-                            <History className="mr-3 text-indigo-600" size={24} /> Decision <span className="text-indigo-600 ml-1.5">History</span>
+                            <History className="mr-3 text-indigo-600" size={24} /> {t('evaluation.history')}
                         </h3>
-                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-2 ml-9">Log of recent evaluation decisions</p>
+                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-2 ml-9">{t('evaluation.historySubtitle')}</p>
                     </div>
                     <button
                         onClick={() => refetchHistory()}
@@ -284,11 +289,11 @@ export default function CreditEvaluation() {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-gray-50/50">
-                                    <th className="px-10 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Distributor</th>
-                                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Amount</th>
-                                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Decision</th>
-                                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Risk Score</th>
-                                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Confidence</th>
+                                    <th className="px-10 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('distributors.table.distributor')}</th>
+                                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">{t('common.evaluateCredit')}</th>
+                                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">{t('evaluation.decisive')}</th>
+                                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">{t('evaluation.riskScore')}</th>
+                                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">{t('evaluation.confidence')}</th>
                                     <th className="px-10 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Date</th>
                                 </tr>
                             </thead>
@@ -305,12 +310,12 @@ export default function CreditEvaluation() {
                                     history.map((item) => (
                                         <tr key={item.id} className="hover:bg-indigo-50/30 transition-colors group">
                                             <td className="px-10 py-6 font-black text-gray-900 uppercase tracking-tight text-sm">
-                                                {item.distributor_name}
-                                                <div className="text-[8px] text-gray-400 -mt-1 font-bold">ID: {item.id}</div>
+                                                {convertDigits(item.distributor_name, i18n)}
+                                                <div className="text-[8px] text-gray-400 -mt-1 font-bold">ID: {formatNumber(item.id, i18n)}</div>
                                             </td>
                                             <td className="px-8 py-6 text-center">
                                                 <span className="text-xs font-black text-gray-700 italic tracking-tighter">
-                                                    ₹{new Intl.NumberFormat('en-IN').format(item.requested_amount)}
+                                                    {formatCurrency(item.requested_amount, i18n)}
                                                 </span>
                                             </td>
                                             <td className="px-8 py-6 text-center">
@@ -318,17 +323,17 @@ export default function CreditEvaluation() {
                                                     item.decision === 'DECLINED' ? 'bg-red-50 text-red-700 border-red-100' :
                                                         'bg-yellow-50 text-yellow-700 border-yellow-100'
                                                     }`}>
-                                                    {item.decision}
+                                                    {t(`common.${item.decision.toLowerCase()}`)}
                                                 </span>
                                             </td>
-                                            <td className="px-8 py-6 text-center font-black text-gray-900">{item.risk_score}</td>
-                                            <td className="px-8 py-6 text-center font-black text-indigo-600">{item.confidence}%</td>
+                                            <td className="px-8 py-6 text-center font-black text-gray-900">{formatNumber(item.risk_score, i18n)}</td>
+                                            <td className="px-8 py-6 text-center font-black text-indigo-600">{formatNumber(item.confidence * 100, i18n)}%</td>
                                             <td className="px-10 py-6 text-right text-[10px] font-black text-gray-400 uppercase italic tracking-widest">
-                                                {new Date(item.created_at).toLocaleDateString('en-IN', {
+                                                {convertDigits(new Date(item.created_at).toLocaleDateString('en-IN', {
                                                     day: '2-digit',
                                                     month: 'short',
                                                     year: 'numeric'
-                                                })}
+                                                }), i18n)}
                                             </td>
                                         </tr>
                                     ))
@@ -337,7 +342,7 @@ export default function CreditEvaluation() {
                                         <td colSpan="6" className="px-10 py-20 text-center">
                                             <div className="flex flex-col items-center">
                                                 <ShieldAlert className="text-gray-200 mb-4" size={48} />
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">No previous decisions found.</p>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('evaluation.noHistory')}</p>
                                             </div>
                                         </td>
                                     </tr>

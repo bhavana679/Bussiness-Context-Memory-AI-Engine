@@ -11,6 +11,7 @@ from models.distributor import Distributor
 from models.invoice import Invoice
 from models.contextual_event import ContextualEvent
 from models.credit_request import CreditRequest
+from models.user import User
 
 
 

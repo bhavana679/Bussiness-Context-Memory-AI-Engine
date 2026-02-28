@@ -13,6 +13,10 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
     (config) => {
         config.metadata = { startTime: new Date() };
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
         return config;
     },
     (error) => {
@@ -41,6 +45,20 @@ apiClient.interceptors.response.use(
                 normalizedError.message = error.response.data?.detail || 'Invalid email or password.';
             } else if (error.response.status === 401) {
                 normalizedError.message = 'Authentication required. Please re-login.';
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('user_role');
+                // Redirect user back to login so they don't get stuck
+                if (!window.location.pathname.includes('/login')) {
+                    window.location.href = '/login';
+                }
+            } else if (error.response.status === 422) {
+                // FastAPI gives validation errors as an array in detail
+                const detail = error.response.data?.detail;
+                if (Array.isArray(detail)) {
+                    normalizedError.message = detail.map(e => e.msg).join(', ');
+                } else {
+                    normalizedError.message = detail || 'Validation Error';
+                }
             } else {
                 normalizedError.message = error.response.data?.detail || 'The request was rejected by the server.';
             }

@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { Search, Filter, ChevronRight, ChevronLeft, AlertCircle, RefreshCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDistributors } from '../hooks/useApiHooks';
+import { useTranslation } from 'react-i18next';
+import { formatCurrency, formatNumber, convertDigits } from '../utils/formatters';
 
 const SkeletonRow = () => (
     <tr className="animate-pulse ">
@@ -15,6 +17,7 @@ const SkeletonRow = () => (
 );
 
 export default function Distributors() {
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);
@@ -33,13 +36,7 @@ export default function Distributors() {
 
     const { data, loading, error, refetch } = useDistributors(distributorsParams);
 
-    const formatCurrency = (val) => {
-        return new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 0
-        }).format(val || 0);
-    };
+    // Removed local formatters to use central ones from utils/formatters.js
 
 
 
@@ -49,13 +46,13 @@ export default function Distributors() {
                 <div className="bg-red-50  w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                     <AlertCircle className="text-red-500" size={32} />
                 </div>
-                <h3 className="text-xl font-black text-gray-900  mb-2 uppercase tracking-tighter">Failed to load distributors</h3>
-                <p className="text-gray-500  mb-6 max-w-sm mx-auto font-medium">Could not load distributors. Please check your network connection.</p>
+                <h3 className="text-xl font-black text-gray-900  mb-2 uppercase tracking-tighter">{t('common.error')}</h3>
+                <p className="text-gray-500  mb-6 max-w-sm mx-auto font-medium">{t('distributors.subtitle')}</p>
                 <button
                     onClick={() => refetch()}
                     className="inline-flex items-center px-6 py-3 bg-indigo-600 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 "
                 >
-                    <RefreshCcw size={18} className="mr-2" /> Try Again
+                    <RefreshCcw size={18} className="mr-2" /> {t('common.retry')}
                 </button>
             </div>
         );
@@ -65,8 +62,8 @@ export default function Distributors() {
         <div className="space-y-8 max-w-7xl mx-auto pb-20">
             <div className="flex flex-col xl:flex-row justify-between xl:items-center gap-4">
                 <div>
-                    <h2 className="text-3xl font-black text-gray-900  tracking-tight uppercase italic">Distributor <span className="text-indigo-600 ">Directory</span></h2>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Manage and search active distributors</p>
+                    <h2 className="text-3xl font-black text-gray-900  tracking-tight uppercase italic">{t('distributors.title')} <span className="text-indigo-600 ">{t('distributors.directory')}</span></h2>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">{t('distributors.subtitle')}</p>
                 </div>
                 <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
                     <div className="relative group">
@@ -75,7 +72,7 @@ export default function Distributors() {
                             type="text"
                             value={searchQuery}
                             onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-                            placeholder="Search for distributors..."
+                            placeholder={t('distributors.searchPlaceholder')}
                             className="pl-12 pr-6 py-3 border border-gray-200  rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-80 bg-white  text-gray-700  font-bold text-xs shadow-sm transition-all"
                         />
                     </div>
@@ -83,7 +80,7 @@ export default function Distributors() {
                         onClick={() => setShowFilters(!showFilters)}
                         className={`flex items-center justify-center px-6 py-3 border rounded-2xl transition-all shadow-sm font-black text-[10px] uppercase tracking-widest ${showFilters ? 'bg-indigo-600 text-white border-indigo-600 scale-[0.98]' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}
                     >
-                        <Filter size={16} className={`mr-2 ${showFilters ? 'text-white' : 'text-indigo-500'}`} /> {showFilters ? 'Active Filters' : 'Advanced Filter'}
+                        <Filter size={16} className={`mr-2 ${showFilters ? 'text-white' : 'text-indigo-500'}`} /> {showFilters ? t('distributors.activeFilters') : t('distributors.advancedFilter')}
                     </button>
                 </div>
             </div>
@@ -91,26 +88,26 @@ export default function Distributors() {
                 <div className="bg-white  border border-gray-100  p-6 rounded-3xl mb-6 shadow-xl animate-in slide-in-from-top-4 duration-500 overflow-hidden">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div className="space-y-3">
-                            <label className="block text-[9px] font-black text-gray-400  uppercase tracking-widest ml-1">Risk Level Filter</label>
+                            <label className="block text-[9px] font-black text-gray-400  uppercase tracking-widest ml-1">{t('distributors.riskLevelFilter')}</label>
                             <select
                                 value={riskFilter}
                                 onChange={(e) => { setRiskFilter(e.target.value); setPage(1); }}
                                 className="w-full bg-gray-50  border-none rounded-2xl py-3 px-4 text-xs font-bold text-gray-700  focus:ring-2 focus:ring-indigo-500"
                             >
-                                <option value="">All Risk Levels</option>
-                                <option value="low">Low Risk Only</option>
-                                <option value="medium">Medium Risk Only</option>
-                                <option value="high">High Risk Only</option>
+                                <option value="">{t('distributors.allRiskLevels')}</option>
+                                <option value="low">{t('distributors.lowRiskOnly')}</option>
+                                <option value="medium">{t('distributors.mediumRiskOnly')}</option>
+                                <option value="high">{t('distributors.highRiskOnly')}</option>
                             </select>
                         </div>
                         <div className="space-y-3">
-                            <label className="block text-[9px] font-black text-gray-400  uppercase tracking-widest ml-1">Industry</label>
+                            <label className="block text-[9px] font-black text-gray-400  uppercase tracking-widest ml-1">{t('distributors.industry')}</label>
                             <select
                                 value={industryFilter}
                                 onChange={(e) => { setIndustryFilter(e.target.value); setPage(1); }}
                                 className="w-full bg-gray-50  border-none rounded-2xl py-3 px-4 text-xs font-bold text-gray-700  focus:ring-2 focus:ring-indigo-500"
                             >
-                                <option value="">All Industries</option>
+                                <option value="">{t('distributors.allIndustries')}</option>
                                 <option value="Hardware">Hardware</option>
                                 <option value="Electronics">Electronics</option>
                                 <option value="Retail">Retail</option>
@@ -124,7 +121,7 @@ export default function Distributors() {
                                 onClick={() => { setRiskFilter(''); setIndustryFilter(''); setSearchQuery(''); }}
                                 className="w-full py-3 bg-gray-100  text-gray-500  rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-200  transition-colors"
                             >
-                                Reset Filters
+                                {t('distributors.resetFilters')}
                             </button>
                         </div>
                     </div>
@@ -136,11 +133,11 @@ export default function Distributors() {
                     <table className="min-w-full divide-y divide-gray-100 ">
                         <thead className="bg-gray-50/50 ">
                             <tr>
-                                <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400  uppercase tracking-[0.2em]">Distributor</th>
-                                <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400  uppercase tracking-[0.2em]">Industry / Location</th>
-                                <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400  uppercase tracking-[0.2em]">Credit Limit</th>
-                                <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400  uppercase tracking-[0.2em]">Utilization</th>
-                                <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400  uppercase tracking-[0.2em]">Risk Level</th>
+                                <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400  uppercase tracking-[0.2em]">{t('distributors.table.distributor')}</th>
+                                <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400  uppercase tracking-[0.2em]">{t('distributors.table.industryLocation')}</th>
+                                <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400  uppercase tracking-[0.2em]">{t('distributors.table.creditLimit')}</th>
+                                <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400  uppercase tracking-[0.2em]">{t('distributors.table.utilization')}</th>
+                                <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400  uppercase tracking-[0.2em]">{t('distributors.table.riskLevel')}</th>
                                 <th className="relative px-8 py-5"></th>
                             </tr>
                         </thead>
@@ -155,15 +152,15 @@ export default function Distributors() {
                                         onClick={() => navigate(`/distributors/${dist.id}`)}
                                     >
                                         <td className="px-8 py-6 whitespace-nowrap">
-                                            <div className="font-black text-gray-900  group-hover:text-indigo-600  transition-colors text-base tracking-tight">{dist.name}</div>
-                                            <div className="text-[10px] font-bold text-gray-400  uppercase tracking-widest mt-1">Ref: {String(dist.id).padStart(4, '0')}</div>
+                                            <div className="font-black text-gray-900  group-hover:text-indigo-600  transition-colors text-base tracking-tight">{convertDigits(dist.name, i18n)}</div>
+                                            <div className="text-[10px] font-bold text-gray-400  uppercase tracking-widest mt-1">{t('distributors.table.ref')}: {formatNumber(String(dist.id).padStart(4, '0'), i18n)}</div>
                                         </td>
                                         <td className="px-8 py-6 whitespace-nowrap">
                                             <div className="text-xs font-black text-gray-700  uppercase tracking-tight">{dist.industry}</div>
                                             <div className="text-[10px] font-bold text-gray-400 mt-1 uppercase">{dist.city}</div>
                                         </td>
                                         <td className="px-8 py-6 whitespace-nowrap text-sm font-black text-gray-900  italic tracking-tighter">
-                                            {formatCurrency(dist.credit_limit)}
+                                            {formatCurrency(dist.credit_limit, i18n)}
                                         </td>
                                         <td className="px-8 py-6 whitespace-nowrap">
                                             <div className="flex items-center space-x-3">
@@ -173,7 +170,7 @@ export default function Distributors() {
                                                         style={{ width: `${dist.utilization_pct}%` }}
                                                     />
                                                 </div>
-                                                <span className="text-[11px] font-black text-gray-900 ">{dist.utilization_pct?.toFixed(1)}%</span>
+                                                <span className="text-[11px] font-black text-gray-900 ">{formatNumber(dist.utilization_pct, i18n, 1)}%</span>
                                             </div>
                                         </td>
                                         <td className="px-8 py-6 whitespace-nowrap">
@@ -184,9 +181,9 @@ export default function Distributors() {
                                                         ? 'bg-yellow-50 text-yellow-700 border-yellow-100'
                                                         : 'bg-green-50 text-green-700 border-green-100'
                                                     }`}>
-                                                    {dist.risk_score >= 80 ? 'High Risk' : dist.risk_score >= 40 ? 'Medium Risk' : 'Low Risk'}
+                                                    {dist.risk_score >= 80 ? t('common.highRisk') : dist.risk_score >= 40 ? t('common.mediumRisk') : t('common.lowRisk')}
                                                 </span>
-                                                <span className="text-[8px] font-black text-gray-400 mt-2 uppercase opacity-40">Index: {dist.risk_score}</span>
+                                                <span className="text-[8px] font-black text-gray-400 mt-2 uppercase opacity-40">{t('common.index')}: {formatNumber(dist.risk_score, i18n)}</span>
                                             </div>
                                         </td>
                                         <td className="px-8 py-6 whitespace-nowrap text-right">
@@ -201,8 +198,8 @@ export default function Distributors() {
                                             <div className="p-6 bg-gray-50  rounded-full mb-6">
                                                 <Search className="text-gray-300 " size={40} />
                                             </div>
-                                            <p className="text-gray-500  font-black uppercase tracking-widest text-xs">No distributors matching "{searchQuery}"</p>
-                                            <button onClick={() => setSearchQuery('')} className="mt-4 text-indigo-600  text-[10px] font-black uppercase tracking-[0.2em] hover:opacity-80 transition-opacity">Reset Filter</button>
+                                            <p className="text-gray-500  font-black uppercase tracking-widest text-xs">{t('distributors.noResults')} "{convertDigits(searchQuery, i18n)}"</p>
+                                            <button onClick={() => setSearchQuery('')} className="mt-4 text-indigo-600  text-[10px] font-black uppercase tracking-[0.2em] hover:opacity-80 transition-opacity">{t('distributors.resetFilters')}</button>
                                         </div>
                                     </td>
                                 </tr>
@@ -214,7 +211,7 @@ export default function Distributors() {
                 {!loading && data?.length === pageSize && (
                     <div className="px-8 py-5 bg-gray-50  border-t border-gray-100  flex items-center justify-between transition-colors">
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                            Page <span className="text-gray-900 ">{page}</span>
+                            {t('common.page')} <span className="text-gray-900 ">{formatNumber(page, i18n)}</span>
                         </p>
                         <div className="flex space-x-3">
                             <button

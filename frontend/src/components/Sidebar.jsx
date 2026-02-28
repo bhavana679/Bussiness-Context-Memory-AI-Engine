@@ -43,13 +43,13 @@ export default function Sidebar({ isOpen, close }) {
 
             <div className="p-4 bg-indigo-950 border-t border-indigo-800 space-y-3 mt-auto mb-4">
                 <div className="flex items-center text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">
-                    <ShieldCheck size={12} className="mr-1" /> Role: {auth.role}
+                    <ShieldCheck size={12} className="mr-1" /> {t('common.role')}: {auth.role}
                 </div>
                 <button
                     onClick={() => useAppStore.getState().logout()}
                     className="w-full bg-indigo-900 border border-indigo-700/50 rounded-lg py-2.5 px-3 text-[10px] uppercase tracking-widest font-black text-indigo-200 hover:text-white hover:bg-indigo-800 transition-all flex items-center justify-center"
                 >
-                    Logout
+                    {t('common.logout')}
                 </button>
             </div>
 

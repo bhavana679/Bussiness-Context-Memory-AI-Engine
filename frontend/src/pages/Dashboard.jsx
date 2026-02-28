@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import useAppStore from '../store/useAppStore';
 import KpiCard from '../components/KpiCard';
+import { convertDigits, formatCurrency, formatNumber } from '../utils/formatters';
 
 const COLORS = ['#22c55e', '#eab308', '#ef4444'];
 
@@ -32,18 +33,11 @@ const SkeletonCard = () => (
 
 export default function Dashboard() {
     const { data, loading, error, refetch } = useDashboard();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const { auth } = useAppStore();
 
-    const formatCurrency = (value) => {
-        if (!value) return '₹0';
-        return new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 0
-        }).format(value);
-    };
+    // Removed local formatters to use central ones from utils/formatters.js
 
 
     if (error) {
@@ -52,13 +46,13 @@ export default function Dashboard() {
                 <div className="p-4 bg-red-50  rounded-full mb-4">
                     <AlertTriangle className="text-red-500" size={48} />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900  mb-2">Failed to load data</h3>
-                <p className="text-gray-500  mb-6 max-w-sm font-medium">We couldn't connect to the server. Please check your network connection.</p>
+                <h3 className="text-xl font-bold text-gray-900  mb-2">{t('common.error')}</h3>
+                <p className="text-gray-500  mb-6 max-w-sm font-medium">{t('dashboard.subtitle')}</p>
                 <button
                     onClick={() => refetch()}
                     className="flex items-center px-6 py-3 bg-indigo-600 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 "
                 >
-                    <RefreshCcw size={18} className="mr-2" /> Retry Connection
+                    <RefreshCcw size={18} className="mr-2" /> {t('dashboard.retryConnection')}
                 </button>
             </div>
         );
@@ -69,7 +63,7 @@ export default function Dashboard() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div>
                     <h2 className="text-3xl font-black text-gray-900 tracking-tight uppercase italic">
-                        {auth.role === 'Viewer' ? 'Portfolio Intelligence' : t('dashboard.title')}
+                        {auth.role === 'Viewer' ? t('dashboard.portfolioIntelligence') : t('dashboard.title')}
                     </h2>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">
                         {auth.role === 'Viewer'
@@ -100,28 +94,28 @@ export default function Dashboard() {
                         <KpiCard
                             icon={IndianRupee}
                             label={t('dashboard.kpi.activeExposure')}
-                            value={formatCurrency(data?.total_exposure)}
+                            value={formatCurrency(data?.total_exposure, i18n)}
                             colorClass="indigo"
                         />
 
                         <KpiCard
                             icon={Activity}
                             label={t('dashboard.kpi.avgScore')}
-                            value={data?.avg_risk_score || 0}
+                            value={formatNumber(data?.avg_risk_score || 0, i18n)}
                             colorClass="yellow"
                         />
 
                         <KpiCard
                             icon={AlertTriangle}
-                            label="Overdue Count"
-                            value={data?.overdue_count || 0}
+                            label={t('dashboard.kpi.overdueCount')}
+                            value={formatNumber(data?.overdue_count || 0, i18n)}
                             colorClass="red"
                         />
 
                         <KpiCard
                             icon={TrendingUp}
                             label={t('dashboard.kpi.riskEntities')}
-                            value={data?.active_count || 0}
+                            value={formatNumber(data?.active_count || 0, i18n)}
                             colorClass="green"
                         />
                     </>
@@ -180,7 +174,7 @@ export default function Dashboard() {
                                 <BarChart data={data.exposure_trend}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-gray-100 " />
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#9ca3af' }} dy={10} />
-                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#9ca3af' }} tickFormatter={(val) => `@\u20B9${val / 100000}L`} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#9ca3af' }} tickFormatter={(val) => `@\u20B9${formatNumber(val / 100000, i18n)}L`} />
                                     <Tooltip
                                         cursor={{ fill: 'rgba(99, 102, 241, 0.05)' }}
                                         contentStyle={{
@@ -191,7 +185,7 @@ export default function Dashboard() {
                                             fontSize: '12px',
                                             padding: '12px'
                                         }}
-                                        formatter={(value) => [formatCurrency(value), 'Exposure']}
+                                        formatter={(value) => [formatCurrency(value, i18n), 'Exposure']}
                                     />
                                     <Bar dataKey="exposure" fill="#4f46e5" radius={[6, 6, 0, 0]} barSize={35} />
                                 </BarChart>
@@ -240,14 +234,14 @@ export default function Dashboard() {
                                         ? 'bg-red-50 text-red-700 border-red-100 shadow-red-100 font-black'
                                         : 'bg-yellow-50 text-yellow-700 border-yellow-100'
                                         }`}>
-                                        {dist.risk_score}
+                                        {formatNumber(dist.risk_score, i18n)}
                                     </span>
                                 </div>
                             </div>
                         ))
                     ) : (
                         <div className="px-8 py-16 text-center">
-                            <p className="text-gray-400 text-[10px] uppercase font-black tracking-widest">No high-risk distributors found</p>
+                            <p className="text-gray-400 text-[10px] uppercase font-black tracking-widest">{t('distributors.noResults')}</p>
                         </div>
                     )}
                 </div>
@@ -256,10 +250,10 @@ export default function Dashboard() {
             <div className="bg-white  rounded-3xl shadow-xl border border-gray-100  transition-colors duration-300">
                 <div className="px-8 py-5 border-b border-gray-100  flex justify-between items-center bg-gray-50/30 ">
                     <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] flex items-center">
-                        <AlertTriangle className="mr-3 text-red-500" size={14} /> Recent Risk Alerts
+                        <AlertTriangle className="mr-3 text-red-500" size={14} /> {t('dashboard.recentAlerts')}
                     </h3>
                     {auth.role === 'Admin' && (
-                        <button onClick={() => navigate('/alerts')} className="text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:opacity-70">View All</button>
+                        <button onClick={() => navigate('/alerts')} className="text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:opacity-70">{t('dashboard.viewAll')}</button>
                     )}
                 </div>
                 <div className="p-8">
@@ -280,7 +274,7 @@ export default function Dashboard() {
                                                     {alert.type}
                                                 </span>
                                                 <p className="mt-2 text-xs font-black text-gray-700 tracking-tight uppercase leading-snug">
-                                                    <span className="text-indigo-600">[{alert.distributor_name}]</span> {alert.message}
+                                                    <span className="text-indigo-600">[{convertDigits(alert.distributor_name, i18n)}]</span> {convertDigits(alert.message, i18n)}
                                                 </p>
                                             </div>
                                         </div>
@@ -289,7 +283,7 @@ export default function Dashboard() {
                                 ))
                             ) : (
                                 <div className="text-center py-10 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-100">
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">No recent risk alerts</p>
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">{t('dashboard.noAlerts')}</p>
                                 </div>
                             )}
                         </div>
