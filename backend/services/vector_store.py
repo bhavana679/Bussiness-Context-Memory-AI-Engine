@@ -124,10 +124,11 @@ class VectorStore:
 store = VectorStore()
 
 def initialize_vector_engine():
-    """Ensures AI Engine is operational on startup."""
-    from database import SessionLocal
+    """Ensures AI Engine is operational without exhausting RAM on boot."""
     index_path = settings.FAISS_INDEX_PATH
-    if not store.load_index(index_path):
-        with SessionLocal() as db:
-            store.rebuild_from_db(db, index_path)
-    logger.info("AI-Memory: Engine online.")
+    if os.path.exists(f"{index_path}.index"):
+        store.load_index(index_path)
+        logger.info("AI-Memory: Cached index loaded.")
+    else:
+        logger.info("AI-Memory: No index found. Will build on first event.")
+    logger.info("AI-Memory: Engine initialized.")
