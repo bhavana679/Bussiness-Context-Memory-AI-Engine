@@ -2,7 +2,7 @@ import os
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = "postgresql://admin_user:G7lSxPFYtQAcBoohFfwZGv48vopi2R9S@dpg-d6hc2qvgi27c73fnsuc0-a.oregon-postgres.render.com/risk_engine_db"
+    DATABASE_URL: str = "postgresql://./risk_engine_db"
     APP_NAME: str = "Business Context Memory AI Engine"
     DEBUG: bool = True
     HOST: str = "0.0.0.0"

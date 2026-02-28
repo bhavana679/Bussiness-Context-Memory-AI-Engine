@@ -1,8 +1,14 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { BrainCircuit, ShieldCheck, Activity, Zap, Database, ArrowRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function Landing() {
+    const { t, i18n } = useTranslation();
+
+    const changeLanguage = (lng) => {
+        i18n.changeLanguage(lng);
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 text-gray-900 font-sans overflow-hidden selection:bg-indigo-500/30">
             <div className="fixed top-[-20%] right-[-10%] w-[800px] h-[800px] bg-indigo-200 rounded-full blur-[200px] opacity-40 pointer-events-none"></div>
@@ -15,7 +21,21 @@ export default function Landing() {
                     </div>
                     <span className="text-xl font-black tracking-widest uppercase italic text-gray-900">AI Risk <span className="text-indigo-600">Engine</span></span>
                 </div>
-                <div className="flex items-center space-x-4 sm:space-x-6">
+                <div className="flex items-center space-x-4 sm:space-x-8">
+                    <div className="flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm">
+                        <button
+                            onClick={() => changeLanguage('en')}
+                            className={`px-3 py-1 text-[10px] font-black rounded-lg transition-all ${i18n.language === 'en' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600'}`}
+                        >
+                            EN
+                        </button>
+                        <button
+                            onClick={() => changeLanguage('hi')}
+                            className={`px-3 py-1 text-[10px] font-black rounded-lg transition-all ${i18n.language === 'hi' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600'}`}
+                        >
+                            HI
+                        </button>
+                    </div>
                     <Link to="/login" className="text-xs sm:text-sm font-black uppercase tracking-widest text-gray-500 hover:text-indigo-600 transition-colors">Log In</Link>
                     <Link to="/signup" className="px-5 py-2 sm:px-6 sm:py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-200 flex items-center">
                         Engage <ArrowRight size={14} className="ml-2" />
