@@ -1,22 +1,78 @@
-
+# ──────────────────────────────────────────────
+# Python
+# ──────────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyo
+*.pyd
 
-# Environment variables
+# ──────────────────────────────────────────────
+# Secrets / Environment variables
+# ──────────────────────────────────────────────
 .env
+.env.local
+.env.*.local
+# Keep example templates
+!.env.example
 
-# Database
+# ──────────────────────────────────────────────
+# Database files
+# ──────────────────────────────────────────────
 *.db
+*.sqlite
 *.sqlite3
 
-# OS files
-.DS_Store
+# ──────────────────────────────────────────────
+# Log files
+# ──────────────────────────────────────────────
+*.log
+logs/
+backend/*.log
+frontend/*.log
 
-# Virtual environment
+# ──────────────────────────────────────────────
+# Virtual environments
+# ──────────────────────────────────────────────
 venv/
 env/
 .venv/
 
-# AI Memory & Local Storage
+# ──────────────────────────────────────────────
+# OS files
+# ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ──────────────────────────────────────────────
+# AI memory & vector index (binary, rebuilt on startup)
+# ──────────────────────────────────────────────
 vector_storage/
+backend/vector_storage/
+
+# ──────────────────────────────────────────────
+# Test / Coverage artifacts
+# ──────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+coverage/
+*.lcov
+
+# ──────────────────────────────────────────────
+# Node / Frontend
+# ──────────────────────────────────────────────
+node_modules/
+dist/
+dist-ssr/
+
+# ──────────────────────────────────────────────
+# IDE / Editor
+# ──────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
