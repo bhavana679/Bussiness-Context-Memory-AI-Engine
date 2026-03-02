@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useAlerts } from '../hooks/useApiHooks';
 import { useTranslation } from 'react-i18next';
-import { convertDigits, formatNumber } from '../utils/formatters';
+import { convertDigits } from '../utils/formatters';
 
 /**
  * Skeleton loader for initial state
