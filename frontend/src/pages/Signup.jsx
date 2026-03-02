@@ -61,10 +61,12 @@ export default function Signup() {
                 <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-10 border border-gray-100">
                     <form onSubmit={handleSignup} className="space-y-6">
                         <div>
-                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('auth.role')}</label>
+                            <label htmlFor="signup-role" className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('auth.role')}</label>
                             <div className="relative">
                                 <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-500" size={18} />
                                 <select
+                                    id="signup-role"
+                                    name="role"
                                     value={role}
                                     onChange={(e) => setRole(e.target.value)}
                                     className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl py-4 pl-12 pr-4 text-sm font-black uppercase tracking-wider focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all cursor-pointer appearance-none"
@@ -77,11 +79,14 @@ export default function Signup() {
                         </div>
 
                         <div>
-                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('auth.email')}</label>
+                            <label htmlFor="signup-email" className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('auth.email')}</label>
                             <div className="relative">
                                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                 <input
+                                    id="signup-email"
+                                    name="email"
                                     type="email"
+                                    autoComplete="email"
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -92,11 +97,14 @@ export default function Signup() {
                         </div>
 
                         <div>
-                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('auth.password')}</label>
+                            <label htmlFor="signup-password" className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('auth.password')}</label>
                             <div className="relative">
                                 <ShieldAlert className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                 <input
+                                    id="signup-password"
+                                    name="password"
                                     type="password"
+                                    autoComplete="new-password"
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}

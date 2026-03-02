@@ -60,11 +60,14 @@ export default function Login() {
                 <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-10 border border-gray-100">
                     <form onSubmit={handleLogin} className="space-y-6">
                         <div>
-                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('auth.email')}</label>
+                            <label htmlFor="login-email" className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('auth.email')}</label>
                             <div className="relative">
                                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                 <input
+                                    id="login-email"
+                                    name="email"
                                     type="email"
+                                    autoComplete="email"
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -75,11 +78,14 @@ export default function Login() {
                         </div>
 
                         <div>
-                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('auth.password')}</label>
+                            <label htmlFor="login-password" className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('auth.password')}</label>
                             <div className="relative">
                                 <ShieldAlert className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                 <input
+                                    id="login-password"
+                                    name="password"
                                     type="password"
+                                    autoComplete="current-password"
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
